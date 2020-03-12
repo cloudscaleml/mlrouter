@@ -31,7 +31,8 @@ def main(event: func.EventGridEvent):
 
             logging.info('Callin GitHub hook')
             response = seer_registered(GitHubToken, ghUri, model, version, ghSha)
-            logging.info(f'GitHub Response: {response.json()}')
+
+            logging.info(f'GitHub Response: {response.status_code}, Text: {response.text}')
 
 
 def seer_registered(token: str, uri: str, model: str, version: int, sha: str) -> requests.Response:
