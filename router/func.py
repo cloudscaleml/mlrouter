@@ -25,33 +25,31 @@ def main(event: func.EventGridEvent):
     if event.event_type == "Microsoft.MachineLearningServices.ModelRegistered":
         model = str(data["modelName"])
         if "seer" in model.lower():
-
             version = data["modelVersion"]
             ghSha = data["modelTags"]["github_ref"]
-
             ghUri = "https://api.github.com/repos/cloudscaleml/seer/dispatches"
 
-            headers = {
-                "Accept": "application/vnd.github.everest-preview+json",
-                "Authorization": f"token {GitHubToken}"
-            }
-
-            data = {
-                "event_type": "model-registered", 
-                "client_payload": { 
-                    "model": model,
-                    "version": str(version),
-                    "service": f"{model}-svc",
-                    "compute_target": "sauron",
-                    "github_ref": ghSha,
-                    "workspace": "hal",
-		            "resource_group": "robots"
-                }
-            }
-
-            logging.info(f'GitHub POST: {json.dumps(data)}')
-            response = requests.post(ghUri, headers=headers, json=json.dumps(data))
+            logging.info('Callin GitHub hook')
+            response = seer_registered(GitHubToken, ghUri, model, version, ghSha)
             logging.info(f'GitHub Response: {response.json()}')
 
 
+def seer_registered(token: str, uri: str, model: str, version: int, sha: str) -> requests.Response:
+    headers = {
+        "Accept": "application/vnd.github.everest-preview+json",
+        "Authorization": f"token {token}"
+    }
+    data = {
+        "event_type": "model-registered", 
+        "client_payload": { 
+            "model": model,
+            "version": str(version),
+            "service": f"{model}-svc",
+            "compute_target": "sauron",
+            "github_ref": sha,
+            "workspace": "hal",
+            "resource_group": "robots"
+        }
+    }
+    return requests.post(uri, headers=headers, data=json.dumps(data))
 
